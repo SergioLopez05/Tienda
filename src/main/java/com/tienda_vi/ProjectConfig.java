@@ -44,7 +44,6 @@ public class ProjectConfig implements WebMvcConfigurer {
         registro.addInterceptor(localeChangeInterceptor());
     }
 
-
     @Override
     public void addViewControllers(ViewControllerRegistry registro) {
         registro.addViewController("/").setViewName("index");
@@ -53,37 +52,21 @@ public class ProjectConfig implements WebMvcConfigurer {
         registro.addViewController("/registro/nuevo").setViewName("registro/nuevo");
     }
 
-    @Bean
+//En este método se establece la estructura de seguridad del sitio 
+     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/", "/index", "/index2", "/css/**", "/js/**", "/webjars/**"
-                )
-                .permitAll()
-                .requestMatchers("/facturar/carrito")
-                .hasRole("USER")
-                .requestMatchers("/producto/listado",
-                        "/categoria/listado")
-                .hasRole("VENDEDOR")
-                .requestMatchers("/producto/nuevo", "/producto/modificar/**",
-                        "/producto/eliminar", "/producto/guardar/**",
-                        "/categoria/nuevo", "/categoria/modificar/**",
-                        "/categoria/eliminar", "/categoria/guardar/**",
-                        "/pruebas/**")
-                .hasRole("ADMIN")
-                .anyRequest().authenticated()
-                )
-                .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/index", true)
-                .permitAll()
-                )
-                .logout(logout -> logout
-                .logoutSuccessUrl("/")
-                .permitAll()
-                );
-
+        http.authorizeHttpRequests((request)
+                -> request
+                        .requestMatchers("/", "/login", "/js/**", "/webjars/**", "/registro/**").permitAll()
+                        .requestMatchers("/categoria/listado", "/producto/listado")
+                        .hasRole("VENDEDOR")
+                        .requestMatchers("/categoria/nuevo", "/categoria/modificar/**",
+                                "/categoria/eliminar/**", "/categoria/guardar", "/producto/nuevo", "/producto/modificar/**", "/producto/eliminar/**", "/producto/guardar",
+                                "/pruebas/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers("/facturar/carrito")
+                        .hasRole("USER")
+        ).formLogin((form) -> form.loginPage("/login").permitAll()).logout((logout) -> logout.permitAll());
         return http.build();
     }
 
@@ -109,7 +92,7 @@ public class ProjectConfig implements WebMvcConfigurer {
 //                .build();
 //
 //        return new InMemoryUserDetailsManager(admin, vendedor, cliente);
-//    }
+//    
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -118,6 +101,5 @@ public class ProjectConfig implements WebMvcConfigurer {
         builder.userDetailsService(userDetailsService)
                 .passwordEncoder(new BCryptPasswordEncoder());
     }
-
 
 }
