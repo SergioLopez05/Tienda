@@ -1,6 +1,7 @@
 package com.tienda_vi.controller;
 
 import com.tienda_vi.domain.Producto;
+import com.tienda_vi.service.CategoriaService;
 import com.tienda_vi.service.ProductoService;
 import com.tienda_vi.service.FirebaseStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +19,17 @@ public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
+    @Autowired
+    private CategoriaService categoriaService;
 
     @GetMapping("/listado")
     public String listado(Model model) {
         var lista = productoService.getProductos(false);
         model.addAttribute("productos", lista);
         model.addAttribute("totalProductos", lista.size());
+        
+        var categorias = categoriaService.getCategorias(false);
+        model.addAttribute("categorias", categorias);
 
         return "/producto/listado";
 
@@ -38,22 +44,24 @@ public class ProductoController {
 
         if (!imagenFile.isEmpty()) {
             productoService.save(producto);
-            String ruta =firebaseStorageService.cargaImagen(imagenFile, "producto", producto.getIdProducto());
+            String ruta = firebaseStorageService.cargaImagen(imagenFile, "producto", producto.getIdProducto());
             producto.setRutaImagen(ruta);
         }
         productoService.save(producto);
         return "redirect:/producto/listado";
     }
-    
+
     @GetMapping("/modificar/{idProducto}")
-    public String modifica(Producto producto, Model model){
-        producto=productoService.getProducto(producto);
-        model.addAttribute("producto",producto);
+    public String modifica(Producto producto, Model model) {
+        producto = productoService.getProducto(producto);
+        model.addAttribute("producto", producto);
+        var categorias = categoriaService.getCategorias(false);
+        model.addAttribute("categorias", categorias);
         return "/producto/modifica";
     }
-    
+
     @GetMapping("/eliminar/{idProducto}")
-    public String elimina(Producto producto){
+    public String elimina(Producto producto) {
         productoService.delete(producto);
         return "redirect:/producto/listado";
     }
